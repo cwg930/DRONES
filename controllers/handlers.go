@@ -1,8 +1,8 @@
 package controllers
 
 import (
-//	"encoding/json"
-	"fmt"
+	"encoding/json"
+//	"fmt"
 	"net/http"
 	"html/template"
 	"strconv"
@@ -42,9 +42,17 @@ func (env *Env) UserIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	for _, usr := range usrs {
-		fmt.Fprintf(w, "%d\tName: %s\tAge: %d\n", usr.ID, usr.Name, usr.Age)
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	err = json.NewEncoder(w).Encode(usrs)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
 	}
+	w.WriteHeader(http.StatusOK)
+
+/*	for _, usr := range usrs {
+		fmt.Fprintf(w, "%d\tName: %s\tAge: %d\n", usr.ID, usr.Name, usr.Age)
+	}*/
 }
 
 func (env *Env) CreateUser(w http.ResponseWriter, r *http.Request) {

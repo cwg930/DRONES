@@ -3,9 +3,9 @@ package models
 import "log"
 
 type User struct{
-	Name string
-	ID int
-	Age int
+	Name string `json:"name"`
+	ID int `json:"id"`
+	Age int `json:"age"`
 }
 
 func (db *DB) AllUsers() ([]*User, error) {
