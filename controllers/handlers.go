@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"html/template"
 	"strconv"
-
+	"log"
 	"github.com/cwg930/imgapitest/models"
 //	"github.com/gorilla/mux"
 )
@@ -22,8 +22,18 @@ func InitEnv(db *models.DB) {
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("adduser.gtpl")
-	t.Execute(w, nil)
+	t, err := template.ParseFiles("adduser.gtpl")
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	err = t.Execute(w, nil)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (env *Env) UserIndex(w http.ResponseWriter, r *http.Request) {
