@@ -2,11 +2,14 @@ package controllers
 
 import (
 	"encoding/json"
-//	"fmt"
+	"fmt"
 	"net/http"
 	"html/template"
 	"strconv"
 	"log"
+	"os"
+	"io"
+
 	"github.com/cwg930/imgapitest/models"
 //	"github.com/gorilla/mux"
 )
@@ -68,4 +71,39 @@ func (env *Env) CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 	}
 }
+
+func SubmitIndex(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("addfile.gtpl")
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	err = t.Execute(w, nil)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 		
+func SubmitFile(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(32 << 20)
+	file, handler, err := r.FormFile("uploadFile")
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	defer file.Close()
+	fmt.Fprintf(w, "%v", handler.Header)
+	f, err := os.OpenFile("./files/" + handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	defer f.Close()
+	io.Copy(f, file)
+}

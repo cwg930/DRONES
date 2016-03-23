@@ -32,4 +32,16 @@ var routes = Routes{
 		"/users",
 		Envr.CreateUser,
 	},
+	Route{
+		"SubmitIndex",
+		"GET",
+		"/files",
+		SubmitIndex,
+	},
+	Route{
+		"SubmitFile",
+		"POST",
+		"/files",
+		SubmitFile,
+	},
 }
