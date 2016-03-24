@@ -7,7 +7,11 @@ import (
 
 type Datastore interface{
 	AllUsers() ([]*User, error)
+	GetUser(int) (*User, error)
 	AddUser(User) (error)
+	AllFiles() ([]*FileMeta, error)
+	AddFile(FileMeta) (error)
+	GetFile(int) (*FileMeta, error)
 }
 
 type DB struct{

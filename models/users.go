@@ -30,6 +30,15 @@ func (db *DB) AllUsers() ([]*User, error) {
 	return usrs, nil
 }
 
+func (db *DB) GetUser(id int) (*User, error) {
+	usr := &User{}
+	err := db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&usr.ID, &usr.Name, &usr.Age)
+	if err != nil {
+		return nil, err
+	}
+	return usr, nil
+}
+
 func (db *DB) AddUser(usr User) error {
 	stmt, err := db.Prepare("INSERT INTO users(name,age) VALUES(?,?)")
 	if err != nil {

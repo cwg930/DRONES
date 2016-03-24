@@ -27,6 +27,12 @@ var routes = Routes{
 		Envr.UserIndex,
 	},
 	Route{
+		"ShowUser",
+		"GET",
+		"/users/{userId}",
+		Envr.ShowUser,
+	},
+	Route{
 		"CreateUser",
 		"POST",
 		"/users",
@@ -42,6 +48,12 @@ var routes = Routes{
 		"SubmitFile",
 		"POST",
 		"/files",
-		SubmitFile,
+		Envr.SubmitFile,
+	},
+	Route{
+		"ShowFile",
+		"GET",
+		"/files/{fileId}",
+		Envr.ShowFile,
 	},
 }

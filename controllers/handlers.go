@@ -11,7 +11,7 @@ import (
 	"io"
 
 	"github.com/cwg930/imgapitest/models"
-//	"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
 type Env struct{
@@ -52,10 +52,27 @@ func (env *Env) UserIndex(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 	}
 	w.WriteHeader(http.StatusOK)
+}
 
-/*	for _, usr := range usrs {
-		fmt.Fprintf(w, "%d\tName: %s\tAge: %d\n", usr.ID, usr.Name, usr.Age)
-	}*/
+func (env *Env) ShowUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userId, err := strconv.ParseInt(vars["userId"], 10, 32)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+	}
+	usr, err := env.db.GetUser(int(userId))
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	err = json.NewEncoder(w).Encode(usr)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (env *Env) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -86,9 +103,8 @@ func SubmitIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 		
-func SubmitFile(w http.ResponseWriter, r *http.Request) {
+func (env *Env) SubmitFile(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(32 << 20)
 	file, handler, err := r.FormFile("uploadFile")
 	if err != nil {
@@ -106,4 +122,22 @@ func SubmitFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	io.Copy(f, file)
+	fMeta := models.FileMeta{FileName:"./files/" + handler.Filename}
+	err = env.db.AddFile(fMeta)
+	if err != nil {
+		log.Printf("Error submitting file info to db: %v",err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}	
+}
+
+func (env *Env) ShowFile(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	fileId, err := strconv.ParseInt(vars["fileId"], 10, 32)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+	}
+	fMeta, err := env.db.GetFile(int(fileId))
+	http.ServeFile(w, r, fMeta.FileName)
 }
