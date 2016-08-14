@@ -1,8 +1,9 @@
-package main
+package routers
 
 import (
 	"net/http"
 	"github.com/gorilla/mux"
+//	"github.com/cwg930/imgapitest/controllers"
 )
 
 func NewRouter() *mux.Router {
@@ -11,7 +12,7 @@ func NewRouter() *mux.Router {
 		var handler http.Handler
 		
 		handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
+	//	handler = controllers.Logger(handler, route.Name)
 
 		router.
 			Methods(route.Method).

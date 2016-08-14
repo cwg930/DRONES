@@ -1,7 +1,8 @@
-package controllers
+package routers
 
 import (
 	"net/http"
+	"github.com/cwg930/imgapitest/controllers"
 )
 
 type Route struct {
@@ -13,47 +14,49 @@ type Route struct {
 
 type Routes []Route
 
+//var Envr = controllers.Envr
+
 var routes = Routes{
 	Route{
 		"Index",
 		"GET",
 		"/",
-		Index,
+		controllers.Index,
 	},
 	Route{
 		"UserIndex",
 		"GET",
 		"/users",
-		Envr.UserIndex,
+		controllers.Envr.UserIndex,
 	},
 	Route{
 		"ShowUser",
 		"GET",
 		"/users/{userId}",
-		Envr.ShowUser,
+		controllers.Envr.ShowUser,
 	},
 	Route{
 		"CreateUser",
 		"POST",
 		"/users",
-		Envr.CreateUser,
+		controllers.Envr.CreateUser,
 	},
 	Route{
-		"SubmitIndex",
+		"FileIndex",
 		"GET",
 		"/files",
-		SubmitIndex,
+		controllers.Envr.ListFiles,
 	},
 	Route{
 		"SubmitFile",
 		"POST",
 		"/files",
-		Envr.SubmitFile,
+		controllers.Envr.SubmitFile,
 	},
 	Route{
 		"ShowFile",
 		"GET",
 		"/files/{fileId}",
-		Envr.ShowFile,
+		controllers.Envr.ShowFile,
 	},
 }

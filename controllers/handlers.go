@@ -16,16 +16,17 @@ import (
 
 type Env struct{
 	db models.Datastore
+	secret string
 }
 
 var Envr Env
 
-func InitEnv(db *models.DB) {
-	Envr = Env{db}
+func InitEnv(db *models.DB, secret string) {
+	Envr = Env{db, secret}
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("adduser.gtpl")
+	t, err := template.ParseFiles("index.gtpl")
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -131,6 +132,23 @@ func (env *Env) SubmitFile(w http.ResponseWriter, r *http.Request) {
 	}	
 }
 
+func (env *Env) ListFiles(w http.ResponseWriter, r *http.Request) {
+	files, err := env.db.AllFiles()
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	err = json.NewEncoder(w).Encode(files)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func (env *Env) ShowFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fileId, err := strconv.ParseInt(vars["fileId"], 10, 32)
@@ -140,4 +158,8 @@ func (env *Env) ShowFile(w http.ResponseWriter, r *http.Request) {
 	}
 	fMeta, err := env.db.GetFile(int(fileId))
 	http.ServeFile(w, r, fMeta.FileName)
+}
+
+func (env *Env) GetToken(w http.ResponseWriter, r *http.Request){
+
 }
