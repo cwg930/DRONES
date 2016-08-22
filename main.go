@@ -7,9 +7,9 @@ import (
 	//"io/ioutil"
 	"github.com/joho/godotenv"
 	"github.com/gorilla/handlers"
-	"github.com/cwg930/imgapitest/routers"
-	"github.com/cwg930/imgapitest/models"
-	"github.com/cwg930/imgapitest/controllers"
+	"github.com/cwg930/drones-server/routers"
+	"github.com/cwg930/drones-server/models"
+	"github.com/cwg930/drones-server/controllers"
 )
 
 func main() {

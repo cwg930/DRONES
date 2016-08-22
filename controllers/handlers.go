@@ -10,7 +10,7 @@ import (
 	"os"
 	"io"
 
-	"github.com/cwg930/imgapitest/models"
+	"github.com/cwg930/drones-server/models"
 	"github.com/gorilla/mux"
 )
 

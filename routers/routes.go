@@ -2,7 +2,7 @@ package routers
 
 import (
 	"net/http"
-	"github.com/cwg930/imgapitest/controllers"
+	"github.com/cwg930/drones-server/controllers"
 )
 
 type Route struct {

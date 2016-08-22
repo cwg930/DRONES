@@ -3,7 +3,7 @@ package routers
 import (
 	"net/http"
 	"github.com/gorilla/mux"
-//	"github.com/cwg930/imgapitest/controllers"
+//	"github.com/cwg930/drones-server/controllers"
 )
 
 func NewRouter() *mux.Router {
