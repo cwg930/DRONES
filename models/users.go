@@ -3,9 +3,9 @@ package models
 import "log"
 
 type User struct{
-	Name string `json:"name"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 	ID int `json:"id"`
-	Age int `json:"age"`
 }
 
 func (db *DB) AllUsers() ([]*User, error) {
@@ -18,7 +18,7 @@ func (db *DB) AllUsers() ([]*User, error) {
 	usrs := make([]*User, 0)
 	for rows.Next() {
 		usr := new(User)
-		err := rows.Scan(&usr.ID, &usr.Name, &usr.Age)
+		err := rows.Scan(&usr.ID, &usr.Username, &usr.Password)
 		if err != nil {
 			return nil, err
 		}
@@ -32,7 +32,7 @@ func (db *DB) AllUsers() ([]*User, error) {
 
 func (db *DB) GetUser(id int) (*User, error) {
 	usr := &User{}
-	err := db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&usr.ID, &usr.Name, &usr.Age)
+	err := db.QueryRow("SELECT * FROM users WHERE id = ?", id).Scan(&usr.ID, &usr.Username, &usr.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -40,11 +40,11 @@ func (db *DB) GetUser(id int) (*User, error) {
 }
 
 func (db *DB) AddUser(usr User) error {
-	stmt, err := db.Prepare("INSERT INTO users(name,age) VALUES(?,?)")
+	stmt, err := db.Prepare("INSERT INTO users(username,password) VALUES(?,?)")
 	if err != nil {
 		return err
 	}
-	res, err := stmt.Exec(usr.Name, usr.Age)
+	res, err := stmt.Exec(usr.Username, usr.Password)
 	if err != nil {
 		return err
 	}
@@ -56,6 +56,19 @@ func (db *DB) AddUser(usr User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Added user: %s with ID %d. Rows affected: %d", usr.Name, lastID, rowCnt)
+	log.Printf("Added user: %s with ID %d. Rows affected: %d", usr.Username, lastID, rowCnt)
 	return nil
+}
+
+func (db *DB) GetUserByUsername(username string) (*User, error) {
+	usr := &User{}
+	err := db.QueryRow("SELECT * FROM users WHERE username = ?", username).Scan(&usr.ID, &usr.Username, &usr.Password)
+	switch{
+	case err == sql.ErrNoRows:
+		return nil, nil
+	case err != nil: 
+		return nil, err
+	default:
+		return usr, nil 
+	}
 }

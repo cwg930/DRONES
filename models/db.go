@@ -18,13 +18,15 @@ type DB struct{
 	*sql.DB
 }
 
-func NewDB(connectionStr string) (*DB, error) {
-	db, err := sql.Open("mysql", connectionStr)
+var DBConn DB
+
+func InitDB(connectionStr string) error {
+	DBConn, err := sql.Open("mysql", connectionStr)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if err := db.Ping(); err != nil {
-		return nil, err
+	if err := DBConn.Ping(); err != nil {
+		return err
 	}
-	return &DB{db}, nil
+	return nil
 }

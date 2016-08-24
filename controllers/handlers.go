@@ -9,11 +9,12 @@ import (
 	"log"
 	"os"
 	"io"
-
+	
 	"github.com/cwg930/drones-server/models"
+	auth "github.com/cwg930/drones-server/authentication"
 	"github.com/gorilla/mux"
 )
-
+/*
 type Env struct{
 	db models.Datastore
 	secret string
@@ -24,7 +25,7 @@ var Envr Env
 func InitEnv(db *models.DB, secret string) {
 	Envr = Env{db, secret}
 }
-
+*/
 func Index(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("index.gtpl")
 	if err != nil {
@@ -78,13 +79,9 @@ func (env *Env) ShowUser(w http.ResponseWriter, r *http.Request) {
 
 func (env *Env) CreateUser(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	name := r.Form.Get("username")
-	age, err := strconv.ParseInt(r.Form.Get("age"), 10, 32)
-	if err != nil {
-		age = 0
-	}
-	usr := models.User{name, 0, int(age)}
-	err = env.db.AddUser(usr)
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	auth.Register(
 	if err != nil {
 		http.Error(w, http.StatusText(500), 500)
 	}

@@ -20,7 +20,7 @@ func main() {
 	}
 	connectStr := os.Getenv("CONNECTION_STR")
 	secret := os.Getenv("AUTH_SECRET")
-	db, err := models.NewDB(string(connectStr))
+	err := models.InitDB(string(connectStr))
 	if err != nil {
 		log.Panic(err)
 	}
