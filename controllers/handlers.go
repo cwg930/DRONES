@@ -26,6 +26,19 @@ func InitEnv(db *models.DB, secret string) {
 	Envr = Env{db, secret}
 }
 */
+
+var db *models.DB
+
+func Init() error {
+	var err error
+	db, err = models.InitDB(string(os.Getenv("CONNECTION_STR")))
+	if err != nil {
+		return err
+	}
+	fmt.Printf("in controllers %+v", db)
+	return nil
+}
+
 func Index(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("index.gtpl")
 	if err != nil {
@@ -41,8 +54,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (env *Env) UserIndex(w http.ResponseWriter, r *http.Request) {
-	usrs, err := env.db.AllUsers()
+func UserIndex(w http.ResponseWriter, r *http.Request) {
+	usrs, err := db.AllUsers()
 	if err != nil {
 		http.Error(w, http.StatusText(500), 500)
 		return
@@ -56,14 +69,14 @@ func (env *Env) UserIndex(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (env *Env) ShowUser(w http.ResponseWriter, r *http.Request) {
+func ShowUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId, err := strconv.ParseInt(vars["userId"], 10, 32)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
 	}
-	usr, err := env.db.GetUser(int(userId))
+	usr, err := db.GetUser(int(userId))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
@@ -77,13 +90,16 @@ func (env *Env) ShowUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (env *Env) CreateUser(w http.ResponseWriter, r *http.Request) {
+func CreateUser(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
-	auth.Register(
-	if err != nil {
+	authBackend := auth.InitAuthBackend()
+	success, err := authBackend.Register(username, password)
+	if err != nil || !success {
 		http.Error(w, http.StatusText(500), 500)
+		log.Println(err)
+		log.Println(success)
 	}
 }
 
@@ -102,7 +118,7 @@ func SubmitIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 		
-func (env *Env) SubmitFile(w http.ResponseWriter, r *http.Request) {
+func SubmitFile(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(32 << 20)
 	file, handler, err := r.FormFile("uploadFile")
 	if err != nil {
@@ -121,7 +137,7 @@ func (env *Env) SubmitFile(w http.ResponseWriter, r *http.Request) {
 	defer f.Close()
 	io.Copy(f, file)
 	fMeta := models.FileMeta{FileName:"./files/" + handler.Filename}
-	err = env.db.AddFile(fMeta)
+	err = db.AddFile(fMeta)
 	if err != nil {
 		log.Printf("Error submitting file info to db: %v",err)
 		http.Error(w, http.StatusText(500), 500)
@@ -129,8 +145,8 @@ func (env *Env) SubmitFile(w http.ResponseWriter, r *http.Request) {
 	}	
 }
 
-func (env *Env) ListFiles(w http.ResponseWriter, r *http.Request) {
-	files, err := env.db.AllFiles()
+func ListFiles(w http.ResponseWriter, r *http.Request) {
+	files, err := db.AllFiles()
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
@@ -146,17 +162,17 @@ func (env *Env) ListFiles(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (env *Env) ShowFile(w http.ResponseWriter, r *http.Request) {
+func ShowFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fileId, err := strconv.ParseInt(vars["fileId"], 10, 32)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
 	}
-	fMeta, err := env.db.GetFile(int(fileId))
+	fMeta, err := db.GetFile(int(fileId))
 	http.ServeFile(w, r, fMeta.FileName)
 }
 
-func (env *Env) GetToken(w http.ResponseWriter, r *http.Request){
+func GetToken(w http.ResponseWriter, r *http.Request){
 
 }

@@ -1,7 +1,9 @@
 package models
 
-import "log"
-
+import (
+	"log"
+	"database/sql"
+)
 type User struct{
 	Username string `json:"username"`
 	Password string `json:"password"`

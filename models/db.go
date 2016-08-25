@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -18,15 +19,21 @@ type DB struct{
 	*sql.DB
 }
 
-var DBConn DB
+var dbInstance *DB
 
-func InitDB(connectionStr string) error {
-	DBConn, err := sql.Open("mysql", connectionStr)
-	if err != nil {
-		return err
+func InitDB(connectionStr string) (*DB, error) {
+	if dbInstance == nil {
+		db, err := sql.Open("mysql", connectionStr)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = db.Ping(); err != nil {
+			return nil, err
+		}
+		dbInstance = &DB{db}
+		fmt.Printf("inside if %+v\n", dbInstance)
 	}
-	if err := DBConn.Ping(); err != nil {
-		return err
-	}
-	return nil
+	fmt.Printf("outside if %+v\n", dbInstance)
+	return dbInstance, nil
 }
