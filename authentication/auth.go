@@ -28,6 +28,11 @@ const (
 
 var authBackendInstance *AuthBackend = nil
 
+var ErrNotFound = errors.New("auth: user not found")
+var ErrUserExists = errors.New("auth: user already exists")
+var ErrInvalidPass = errors.New("auth: password not valid")
+var ErrInvalidUser = errors.New("auth: username not valid")
+
 func InitAuthBackend() *AuthBackend {
 	if authBackendInstance == nil {
 		authBackendInstance = &AuthBackend{
@@ -51,8 +56,24 @@ func (backend *AuthBackend) GenerateToken(userUUID string) (string, error){
 	return tokenString, nil
 }
 
-func (backend *AuthBackend) Authenticate(user *models.User) bool {
-	return false
+func (backend *AuthBackend) Authenticate(user *models.User) (bool, error) {
+	db, err := models.InitDB(string(os.Getenv("CONNECTION_STR")))
+	if err != nil {
+		return false, err
+	}
+	foundUser, err := db.GetUserByUsername(user.Username)
+	if err != nil {
+		return false, err
+	}else if foundUser == nil {
+		return false, ErrNotFound
+	}
+	uNameMatch := user.Username == foundUser.Username
+	err := bcrypt.CompareHashAndPassword(foundUser.Password, user.Password)
+	if err != nil {
+		return false, err
+	}
+	success := uNameMatch && err == nil
+	return success, nil
 }
 
 func (backend *AuthBackend) Register(username string, password string) (bool, error) {
@@ -61,14 +82,14 @@ func (backend *AuthBackend) Register(username string, password string) (bool, er
 		return false, err
 	}
 	if !valid {
-		return false, errors.New("invalid username")
+		return false, ErrInvalidUser
 	}
 	valid, err = regexp.MatchString(passExpr, password)
 	if err != nil {
 		return false, err
 	}
 	if !valid {
-		return false, errors.New("invalid password")
+		return false, ErrInvalidPass
 	}
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -82,7 +103,7 @@ func (backend *AuthBackend) Register(username string, password string) (bool, er
 	if err != nil {
 		return false, err
 	}else if err == nil && usr != nil {
-		return false, errors.New("user already exists")
+		return false, ErrUserExists
 	}else {
 		usr := models.User{Username: username, Password: string(hashedPass)}
 		err := db.AddUser(usr)
