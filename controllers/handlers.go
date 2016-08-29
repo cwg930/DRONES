@@ -14,6 +14,7 @@ import (
 	"github.com/cwg930/drones-server/services"
 	auth "github.com/cwg930/drones-server/authentication"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/context"
 )
 /*
 type Env struct{
@@ -84,7 +85,7 @@ func UserIndex(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func ShowUser(w http.ResponseWriter, r *http.Request) {
+func ShowUser(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	vars := mux.Vars(r)
 	userId, err := strconv.ParseInt(vars["userId"], 10, 32)
 	if err != nil {
@@ -110,6 +111,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
 	authBackend := auth.InitAuthBackend()
+	log.Printf("\nIn CreateUser username=%v", username)
 	success, err := authBackend.Register(username, password)
 	if err != nil || !success {
 		http.Error(w, http.StatusText(500), 500)
@@ -119,7 +121,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func SubmitIndex(w http.ResponseWriter, r *http.Request) {
+func SubmitIndex(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	t, err := template.ParseFiles("addfile.gtpl")
 	if err != nil {
 		log.Println(err)
@@ -134,7 +136,7 @@ func SubmitIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 		
-func SubmitFile(w http.ResponseWriter, r *http.Request) {
+func SubmitFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	r.ParseMultipartForm(32 << 20)
 	file, handler, err := r.FormFile("uploadFile")
 	if err != nil {
@@ -152,7 +154,8 @@ func SubmitFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	io.Copy(f, file)
-	fMeta := models.FileMeta{FileName:"./files/" + handler.Filename}
+	usr := context.Get(r, auth.UserKey)
+	fMeta := models.FileMeta{FileName:"./files/" + handler.Filename, OwnerID: int(usr.(float64))}
 	err = db.AddFile(fMeta)
 	if err != nil {
 		log.Printf("Error submitting file info to db: %v",err)
@@ -161,7 +164,7 @@ func SubmitFile(w http.ResponseWriter, r *http.Request) {
 	}	
 }
 
-func ListFiles(w http.ResponseWriter, r *http.Request) {
+func ListFiles(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	files, err := db.AllFiles()
 	if err != nil {
 		log.Println(err)
@@ -178,7 +181,7 @@ func ListFiles(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func ShowFile(w http.ResponseWriter, r *http.Request) {
+func ShowFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	vars := mux.Vars(r)
 	fileId, err := strconv.ParseInt(vars["fileId"], 10, 32)
 	if err != nil {

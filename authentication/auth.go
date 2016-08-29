@@ -68,7 +68,11 @@ func (backend *AuthBackend) Authenticate(user *models.User) bool {
 	if err != nil || foundUser == nil {
 		return false
 	}
-	return user.Username == foundUser.Username && bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password)) == nil
+	if user.Username == foundUser.Username && bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password)) == nil {
+		user.ID = foundUser.ID
+		return true
+	}
+	return false
 }
 
 func (backend *AuthBackend) Register(username string, password string) (bool, error) {
