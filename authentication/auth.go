@@ -11,12 +11,16 @@ import (
 	"time"
 	"regexp"
 	"errors"
+	"fmt"
 	"github.com/cwg930/drones-server/models"
 )
 
 type AuthBackend struct {
-	privateKey *rsa.PrivateKey
-	PublicKey *rsa.PublicKey
+	HMACSecret []byte
+}
+
+type Token struct {
+	Token string `json:"token"`
 }
 
 const (
@@ -35,45 +39,36 @@ var ErrInvalidUser = errors.New("auth: username not valid")
 
 func InitAuthBackend() *AuthBackend {
 	if authBackendInstance == nil {
-		authBackendInstance = &AuthBackend{
-//			privateKey: getPrivateKey(),
-//			PublicKey: getPublicKey(),
-		}
+		authBackendInstance = &AuthBackend{[]byte(os.Getenv("AUTH_SECRET"))}
 	}
 	return authBackendInstance
 }
 
-func (backend *AuthBackend) GenerateToken(userUUID string) (string, error){
-	token := jwt.New(jwt.SigningMethodRS512)
-	
-	token.Claims["iat"] = time.Now().Unix()
-	token.Claims["sub"] = userUUID
-	tokenString, err := token.SignedString(backend.privateKey)
+func (backend *AuthBackend) GenerateToken(userID int) (string, error){
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iat":time.Now().Unix(),
+		"sub":userID,
+	})
+
+	tokenString, err := token.SignedString(backend.HMACSecret)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 		return "", err
 	}
 	return tokenString, nil
 }
 
-func (backend *AuthBackend) Authenticate(user *models.User) (bool, error) {
+func (backend *AuthBackend) Authenticate(user *models.User) bool {
 	db, err := models.InitDB(string(os.Getenv("CONNECTION_STR")))
 	if err != nil {
-		return false, err
+		return false
 	}
+	fmt.Println("In authenticate username = " + user.Username)
 	foundUser, err := db.GetUserByUsername(user.Username)
-	if err != nil {
-		return false, err
-	}else if foundUser == nil {
-		return false, ErrNotFound
+	if err != nil || foundUser == nil {
+		return false
 	}
-	uNameMatch := user.Username == foundUser.Username
-	err := bcrypt.CompareHashAndPassword(foundUser.Password, user.Password)
-	if err != nil {
-		return false, err
-	}
-	success := uNameMatch && err == nil
-	return success, nil
+	return user.Username == foundUser.Username && bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password)) == nil
 }
 
 func (backend *AuthBackend) Register(username string, password string) (bool, error) {
@@ -92,6 +87,7 @@ func (backend *AuthBackend) Register(username string, password string) (bool, er
 		return false, ErrInvalidPass
 	}
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	fmt.Println(string(hashedPass))
 	if err != nil {
 		return false, err
 	}

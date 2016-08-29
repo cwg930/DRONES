@@ -64,13 +64,17 @@ func (db *DB) AddUser(usr User) error {
 
 func (db *DB) GetUserByUsername(username string) (*User, error) {
 	usr := &User{}
+	log.Println("In GetUserByUsername, username = " + username)
 	err := db.QueryRow("SELECT * FROM users WHERE username = ?", username).Scan(&usr.ID, &usr.Username, &usr.Password)
 	switch{
 	case err == sql.ErrNoRows:
+		log.Println("no rows")
 		return nil, nil
 	case err != nil: 
+		log.Println(err)
 		return nil, err
 	default:
+		log.Printf("%+v\n", usr)
 		return usr, nil 
 	}
 }

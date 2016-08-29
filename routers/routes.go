@@ -1,5 +1,5 @@
 package routers
-
+/*
 import (
 	"net/http"
 	"github.com/cwg930/drones-server/controllers"
@@ -22,6 +22,12 @@ var routes = Routes{
 		"GET",
 		"/",
 		controllers.Index,
+	},
+	Route{
+		"Login",
+		"POST",
+		"/login",
+		controllers.Login,
 	},
 	Route{
 		"UserIndex",
@@ -60,3 +66,4 @@ var routes = Routes{
 		controllers.ShowFile,
 	},
 }
+*/

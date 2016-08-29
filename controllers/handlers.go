@@ -11,6 +11,7 @@ import (
 	"io"
 	
 	"github.com/cwg930/drones-server/models"
+	"github.com/cwg930/drones-server/services"
 	auth "github.com/cwg930/drones-server/authentication"
 	"github.com/gorilla/mux"
 )
@@ -54,7 +55,21 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UserIndex(w http.ResponseWriter, r *http.Request) {
+func Login(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	log.Println("in login handler username = " + username)
+	user := &models.User{Username: username, Password: password}
+	log.Println("in login handler user.Username = " + user.Username)
+	responseStatus, token := services.Login(user)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(responseStatus)
+	log.Println("in login handler " + string(token))
+	w.Write(token)
+}
+
+func UserIndex(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	usrs, err := db.AllUsers()
 	if err != nil {
 		http.Error(w, http.StatusText(500), 500)
@@ -101,6 +116,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		log.Println(success)
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func SubmitIndex(w http.ResponseWriter, r *http.Request) {

@@ -25,7 +25,7 @@ func main() {
 		log.Panic(err)
 	}
 //	controllers.InitEnv(db, secret)
-	router := routers.NewRouter()
+	router := routers.InitRoutes()
 
 	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, router))
 }
