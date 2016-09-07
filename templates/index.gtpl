@@ -3,15 +3,18 @@
     <title></title>
   </head>
 <body>
-  <form action="/users" method="post">
-    Name:<input type="text" name="username">
-    Age:<input type="number" name="age">
+  <h1>Login</h1>
+  <form action="/login" method="post">
+    Username:<input type="text" name="username">
+    Password:<input type="password" name="password">
     <input type="submit" value="submit">
   </form>
   <br>
-  <form enctype="multipart/form-data" action="/files" method="post">
-    File:<input type="file" name="uploadFile">
-    <input type="submit" value="Upload">
+  <h1>Register</h1>
+  <form action="/users" method="post">
+    Name:<input type="text" name="username">
+    Password:<input type="password" name="password">
+    <input type="submit" value="submit">
   </form>
 </body>
 </html>

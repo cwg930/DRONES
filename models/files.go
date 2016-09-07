@@ -5,7 +5,7 @@ import "log"
 type FileMeta struct{
 	FileName string `json:"filename"`
 	ID int `json:"id"`
-//	Owner User `json:"owner"`
+	OwnerID int `json:"owner"`
 }
 
 func (db *DB) AllFiles() ([]*FileMeta, error) {
@@ -40,11 +40,11 @@ func (db *DB) GetFile(id int) (*FileMeta, error) {
 }
 //add a reference to a file 
 func (db *DB) AddFile(file FileMeta) error {
-	stmt, err := db.Prepare("INSERT INTO files(filename) VALUES(?)")
+	stmt, err := db.Prepare("INSERT INTO files(owner,filename) VALUES(?,?)")
 	if err != nil {
 		return err
 	}
-	res, err := stmt.Exec(file.FileName)
+	res, err := stmt.Exec(file.OwnerID, file.FileName)
 	if err != nil {
 		return err
 	}
