@@ -56,6 +56,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.Form.Get("username")
@@ -65,6 +66,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("in login handler user.Username = " + user.Username)
 	responseStatus, token := services.Login(user)
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.WriteHeader(responseStatus)
 	log.Println("in login handler " + string(token))
 	w.Write(token)
@@ -165,7 +167,8 @@ func SubmitFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 }
 
 func ListFiles(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	files, err := db.AllFiles()
+	usr := context.Get(r, auth.UserKey)
+	files, err := db.AllFiles(int(usr.(float64)))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
@@ -178,6 +181,7 @@ func ListFiles(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	
 	w.WriteHeader(http.StatusOK)
 }
 

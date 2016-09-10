@@ -10,19 +10,36 @@ import (
 
 func InitRoutes() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/", controllers.Index).Methods("GET")
+//	router.HandleFunc("/", controllers.Index).Methods("GET")
 	router.HandleFunc("/login", controllers.Login).Methods("POST")
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
-	router.Handle("/users",
+	router = setCORSRoutes(router)
+	router = setFlightPlanRoutes(router)
+	router = setFileRoutes(router)
+	return router
+}
+
+func setCORSRoutes(router *mux.Router) *mux.Router {
+	router.HandleFunc("/files", controllers.HandleCORS).Methods("OPTIONS")
+	router.HandleFunc("/flightplans", controllers.HandleCORS).Methods("OPTIONS")
+	return router
+}
+
+func setFlightPlanRoutes(router *mux.Router) *mux.Router {
+	router.Handle("/flightplans", 
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
-			negroni.HandlerFunc(controllers.UserIndex),
+			negroni.HandlerFunc(controllers.ListPlans),
 		)).Methods("GET")
-	router.Handle("/users/{userId}",
+	router.Handle("/flightplans/{planId}", 
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
-			negroni.HandlerFunc(controllers.ShowUser),
+			negroni.HandlerFunc(controllers.ShowPlan),
 		)).Methods("GET")
+	return router
+}
+
+func setFileRoutes(router *mux.Router) *mux.Router {
 	router.Handle("/files", 
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),

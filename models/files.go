@@ -8,8 +8,8 @@ type FileMeta struct{
 	OwnerID int `json:"owner"`
 }
 
-func (db *DB) AllFiles() ([]*FileMeta, error) {
-	rows, err := db.Query("SELECT id, filename FROM files")
+func (db *DB) AllFiles(ownerID int) ([]*FileMeta, error) {
+	rows, err := db.Query("SELECT * FROM files WHERE owner = ?", ownerID)
 	if err != nil {
 		return nil, err
 	}
@@ -18,7 +18,7 @@ func (db *DB) AllFiles() ([]*FileMeta, error) {
 	files := make([]*FileMeta, 0)
 	for rows.Next() {
 		file := new (FileMeta)
-		err := rows.Scan(&file.ID, &file.FileName)
+		err := rows.Scan(&file.ID, &file.OwnerID, &file.FileName)
 		if err != nil {
 			return nil, err
 		}
