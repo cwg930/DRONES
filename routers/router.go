@@ -36,6 +36,11 @@ func setFlightPlanRoutes(router *mux.Router) *mux.Router {
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
 			negroni.HandlerFunc(controllers.ShowPlan),
 		)).Methods("GET")
+	router.Handle("/flightplans", 
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.CreatePlan),
+		)).Methods("POST")
 	return router
 }
 

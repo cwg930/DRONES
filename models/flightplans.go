@@ -83,7 +83,6 @@ func (db *DB) AddFlightPlan(plan FlightPlan) error {
 		return err
 	}
 	log.Printf("Added flightplan: %s with ID %d. Rows affected: %d", plan.Name, lastID, rowCnt)
-	db.AddAllPoints(plan.ID, plan.Points)
 	return nil
 }
 
