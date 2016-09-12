@@ -24,7 +24,7 @@ func RequireTokenAuthentication(rw http.ResponseWriter, req *http.Request, next 
 		}
 	})
 	if err != nil{
-		rw.WriteHeader(http.StatusInternalServerError)
+		rw.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	

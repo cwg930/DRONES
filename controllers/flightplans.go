@@ -17,34 +17,44 @@ func ListPlans(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	err = json.NewEncoder(w).Encode(plans)
 	if err != nil {
-		log.Println(err)
+		log.Println(err) 
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
 func ShowPlan(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
 	vars := mux.Vars(r)
+	log.Println(vars)
 	planId, err := strconv.ParseInt(vars["planId"], 10, 32)
 	if err != nil {
+		log.Println("1")
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
 	plan, err := db.GetPlan(int(planId))
 	if err != nil { 
+		log.Println("2")
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	err = json.NewEncoder(w).Encode(plan)
 	if err != nil {
+		log.Println("3")
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
+	log.Println("????")
 	w.WriteHeader(http.StatusOK)
 }
 
