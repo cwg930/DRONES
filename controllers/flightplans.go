@@ -59,24 +59,29 @@ func ShowPlan(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
 }
 
 func CreatePlan(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
+	log.Printf("request body: %+v", r.Body)
 	decoder := json.NewDecoder(r.Body)
 	var p models.FlightPlan
 	err := decoder.Decode(&p)
 	owner := context.Get(r, auth.UserKey)
+	log.Printf("plan received: %+v", p)
 	p.OwnerID = int(owner.(float64))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
-	err = db.AddFlightPlan(p)
+	id, err := db.AddFlightPlan(p)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
-	err = db.AddAllPoints(p.ID, p.Points)
+	err = db.AddAllPoints(int(id.(int64)), p.Points)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 }

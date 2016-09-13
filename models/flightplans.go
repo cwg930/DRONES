@@ -65,41 +65,44 @@ func (db *DB) AllPlansForUser(ownerID int) ([]*FlightPlan, error){
 	return plans, nil
 }
 
-func (db *DB) AddFlightPlan(plan FlightPlan) error {
+func (db *DB) AddFlightPlan(plan FlightPlan) (interface{},error) {
 	stmt, err := db.Prepare("INSERT INTO flightplans(name,owner) VALUES (?,?)")
 	if err != nil {
-		return err
+		return nil,err
 	}
 	res, err := stmt.Exec(plan.Name, plan.OwnerID)
 	if err != nil {
-		return err
+		return nil,err
 	}
 	lastID, err := res.LastInsertId()
 	if err != nil {
-		return err
+		return nil,err
 	}
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
-		return err
+		return nil,err
 	}
 	log.Printf("Added flightplan: %s with ID %d. Rows affected: %d", plan.Name, lastID, rowCnt)
-	return nil
+	return lastID,nil
 }
 
 func (db *DB) AddAllPoints(planID int, points []*Point) error {
 	sqlStr := "INSERT INTO points(plan, lat, lon, alt, picture) VALUES "
 	vals := []interface{}{}
+	log.Printf("points: %+v", points)
 	
 	for _, row := range points {
 		sqlStr += "(?,?,?,?,?),"
 		vals = append(vals, planID, row.Lat, row.Lon, row.Alt, row.Pic)
+		log.Printf("vals: %v", vals)
 	}
-	sqlStr = sqlStr[0:len(sqlStr)-2]
+	sqlStr = sqlStr[0:len(sqlStr)-1]
+	log.Printf("sqlStr: %v\n", sqlStr)
 	stmt, err := db.Prepare(sqlStr)
 	if err != nil {
 		return err
 	}
-	res, err := stmt.Exec(vals)
+	res, err := stmt.Exec(vals...)
 	if err != nil {
 		return err
 	}
