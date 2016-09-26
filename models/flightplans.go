@@ -89,7 +89,7 @@ func (db *DB) AddFlightPlan(plan FlightPlan) (interface{},error) {
 func (db *DB) AddAllPoints(planID int, points []*Point) error {
 	sqlStr := "INSERT INTO points(plan, lat, lon, alt, picture) VALUES "
 	vals := []interface{}{}
-	log.Printf("points: %+v", points)
+	log.Printf("points: %+v", *points)
 	
 	for _, row := range points {
 		sqlStr += "(?,?,?,?,?),"

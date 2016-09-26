@@ -63,14 +63,14 @@ func CreatePlan(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
 	decoder := json.NewDecoder(r.Body)
 	var p models.FlightPlan
 	err := decoder.Decode(&p)
-	owner := context.Get(r, auth.UserKey)
-	log.Printf("plan received: %+v", p)
-	p.OwnerID = int(owner.(float64))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	owner := context.Get(r, auth.UserKey)
+	log.Printf("plan received: %+v", p)
+	p.OwnerID = int(owner.(float64))
 	id, err := db.AddFlightPlan(p)
 	if err != nil {
 		log.Println(err)
