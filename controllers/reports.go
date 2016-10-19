@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 	auth "github.com/cwg930/drones-server/authentication"
+	"github.com/cwg930/drones-server/models"
 )
 
 func ListReports(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){

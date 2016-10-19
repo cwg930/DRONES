@@ -42,25 +42,25 @@ func (db *DB) AllReportsForUser(userId int) ([]*Report, error) {
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	return files, nil
+	return reports, nil
 }
 
-func (db *DB) AddReport(report Report) (int, error) {
+func (db *DB) AddReport(report Report) (int64, error) {
 	stmt, err := db.Prepare("INSERT INTO reports(name, owner, plan) VALUES (?,?,?)")
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 	res, err := stmt.Exec(report.Name, report.OwnerID, report.PlanID)
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 	lastID, err := res.LastInsertId()
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 	log.Printf("Added report: %s with ID %d. Rows affected: %d", report.Name, lastID, rowCnt)
 	return lastID, nil
