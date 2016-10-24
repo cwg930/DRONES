@@ -14,6 +14,7 @@ type Point struct{
 	Lat float64 `json:"lat"`
 	Lon float64 `json:"lon"`
 	Alt float64 `json:"alt"`
+	Rot float64 `json:"rot"`
 	Pic bool `json:"pic"`
 }
 
@@ -23,7 +24,7 @@ func (db *DB) GetPlan(id int) (*FlightPlan, error) {
 	if err != nil {
 		return nil, err
 	}
-	rows, err := db.Query("SELECT id,lat,lon,alt,picture FROM points WHERE plan = ?", plan.ID)
+	rows, err := db.Query("SELECT id,lat,lon,alt,rot,picture FROM points WHERE plan = ?", plan.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +32,7 @@ func (db *DB) GetPlan(id int) (*FlightPlan, error) {
 	points := make([]*Point, 0)
 	for rows.Next() {
 		point := new(Point)
-		err := rows.Scan(&point.ID, &point.Lat, &point.Lon, &point.Alt, &point.Pic)
+		err := rows.Scan(&point.ID, &point.Lat, &point.Lon, &point.Alt, &point.Rot, &point.Pic)
 		if err != nil {
 			return nil, err
 		}
@@ -87,13 +88,13 @@ func (db *DB) AddFlightPlan(plan FlightPlan) (interface{},error) {
 }
 
 func (db *DB) AddAllPoints(planID int, points []*Point) error {
-	sqlStr := "INSERT INTO points(plan, lat, lon, alt, picture) VALUES "
+	sqlStr := "INSERT INTO points(plan, lat, lon, alt, rot, picture) VALUES "
 	vals := []interface{}{}
 	log.Printf("points: %+v", points)
 	
 	for _, row := range points {
-		sqlStr += "(?,?,?,?,?),"
-		vals = append(vals, planID, row.Lat, row.Lon, row.Alt, row.Pic)
+		sqlStr += "(?,?,?,?,?,?),"
+		vals = append(vals, planID, row.Lat, row.Lon, row.Alt, row.Rot, row.Pic)
 		log.Printf("vals: %v", vals)
 	}
 	sqlStr = sqlStr[0:len(sqlStr)-1]
