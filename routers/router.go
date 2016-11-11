@@ -15,6 +15,7 @@ func InitRoutes() *mux.Router {
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
 	router = setCORSRoutes(router)
 	router = setFlightPlanRoutes(router)
+	router = setReportRoutes(router)
 	router = setFileRoutes(router)
 	return router
 }
