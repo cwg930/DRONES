@@ -45,6 +45,25 @@ func setFlightPlanRoutes(router *mux.Router) *mux.Router {
 	return router
 }
 
+func setReportRoutes(router *mux.Router) *mux.Router {
+	router.Handle("/reports",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.ListReports),
+		)).Methods("GET")
+	router.Handle("/reports/{reportId}",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.GetReport),
+		)).Methods("GET")
+	router.Handle("/reports",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.CreateReport),
+		)).Methods("POST")
+	return router
+}
+
 func setFileRoutes(router *mux.Router) *mux.Router {
 	router.Handle("/files", 
 		negroni.New(
