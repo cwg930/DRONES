@@ -4,7 +4,7 @@ import "log"
 
 type Report struct{
 	Name string `json:"name"`
-	ID int `json:"id"`
+	ID int64 `json:"id"`
 	OwnerID int `json:"owner"`
 	PlanID int `json:"flightplan"`
 }

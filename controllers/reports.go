@@ -70,4 +70,11 @@ func CreateReport(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	report.ID = id
+	err = json.NewEncoder(w).Encode(report)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return 
+	}
 }
