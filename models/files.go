@@ -56,7 +56,7 @@ func (db *DB) AllFilesForReport(reportID int) ([]*FileMeta, error) {
 
 func (db *DB) GetFile(id int) (*FileMeta, error) {
 	file := &FileMeta{}
-	err := db.QueryRow("SELECT id, filename FROM files WHERE id = ?", id).Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)
+	err := db.QueryRow("SELECT * FROM files WHERE id = ?", id).Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)
 	if err != nil {
 		return nil, err
 	}
