@@ -53,7 +53,28 @@ func (db *DB) AllFilesForReport(reportID int) ([]*FileMeta, error) {
 	return files, nil
 }
 
-
+/*
+func (db *DB) AllFilesForPlan(planID int) ([]*FileMeta,[]*Reports, error) {
+	rows, err := db.Query("SELECT * FROM files INNER JOIN reports ON files.report=reports.id WHERE plan=?", planID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	files := make([]*FileMeta, 0)
+	for rows.Next() {
+		file := new (FileMeta)
+		err := rows.Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, file)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+*/
 func (db *DB) GetFile(id int) (*FileMeta, error) {
 	file := &FileMeta{}
 	err := db.QueryRow("SELECT * FROM files WHERE id = ?", id).Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)

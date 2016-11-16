@@ -62,6 +62,11 @@ func setReportRoutes(router *mux.Router) *mux.Router {
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
 			negroni.HandlerFunc(controllers.CreateReport),
 		)).Methods("POST")
+	router.Handle("/reports/forplan/{planId}",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.GetReportsForPlan),
+		)).Methods("GET")
 	return router
 }
 

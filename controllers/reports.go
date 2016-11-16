@@ -29,6 +29,29 @@ func ListReports(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
 	w.WriteHeader(http.StatusOK)
 }
 
+func GetReportsForPlan(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	vars := mux.Vars(r)
+	planID, err := strconv.ParseInt(vars["planId"], 10, 32)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	reports, err := db.AllReportsForPlan(planID)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	err = json.NewEncoder(w).Encode(reports)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+}
+
 func GetReport(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
 	vars := mux.Vars(r)
 	reportId, err := strconv.ParseInt(vars["reportId"], 10, 32)
