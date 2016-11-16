@@ -32,7 +32,7 @@ func (db *DB) AllFiles(ownerID int) ([]*FileMeta, error) {
 	return files,  nil
 }
 
-func (db *DB) AllFilesForReport(reportID int) ([]*FileMeta, error) {
+func (db *DB) AllFilesForReport(reportID int64) ([]*FileMeta, error) {
 	rows, err := db.Query("SELECT * FROM files WHERE report = ?", reportID)
 	if err != nil {
 		return nil, err

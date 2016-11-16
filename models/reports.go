@@ -45,7 +45,7 @@ func (db *DB) AllReportsForUser(userId int) ([]*Report, error) {
 	return reports, nil
 }
 
-func (db *DB) AllReportsForPlan(planId int) ([]*Report, error) {
+func (db *DB) AllReportsForPlan(planId int64) ([]*Report, error) {
 	rows, err := db.Query("SELECT * FROM reports WHERE plan = ?", planId)
 	if err != nil {
 		return nil, err
