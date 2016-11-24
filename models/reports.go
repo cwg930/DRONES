@@ -37,6 +37,10 @@ func (db *DB) AllReportsForUser(userId int) ([]*Report, error) {
 		if err != nil {
 			return nil, err
 		}
+		report.Files, err = db.AllFilesForReport(report.ID)
+		if err != nil {
+			return nil, err
+		}
 		reports = append(reports, report)
 	}
 	if err = rows.Err(); err != nil {

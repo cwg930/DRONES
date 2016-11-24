@@ -24,6 +24,7 @@ func setCORSRoutes(router *mux.Router) *mux.Router {
 	router.HandleFunc("/files", controllers.HandleCORS).Methods("OPTIONS")
 	router.HandleFunc("/flightplans", controllers.HandleCORS).Methods("OPTIONS")
 	router.HandleFunc("/flightplans/{planId}", controllers.HandleCORS).Methods("OPTIONS")
+	router.HandleFunc("/reports", controllers.HandleCORS).Methods("OPTIONS")
 	return router
 }
 
