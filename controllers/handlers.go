@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"html/template"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"os"
 	"io"
+	"io/ioutil"
 	
 	"github.com/cwg930/drones-server/models"
 	"github.com/cwg930/drones-server/services"
@@ -206,6 +208,25 @@ func ShowFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	}
 	fMeta, err := db.GetFile(int(fileId))
 	http.ServeFile(w, r, fMeta.FileName)
+}
+
+func SendFileBase64(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
+	vars := mux.Vars(r)
+	fileId, err := strconv.ParseInt(vars["fileId"], 10,32)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	fMeta, err := db.GetFile(int(fileId))
+	file, err := ioutil.ReadFile(fMeta.FileName)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	enc := base64.NewEncoder(base64.StdEncoding, w)
+	enc.Write(file)
 }
 
 func GetToken(w http.ResponseWriter, r *http.Request){

@@ -25,6 +25,7 @@ func setCORSRoutes(router *mux.Router) *mux.Router {
 	router.HandleFunc("/flightplans", controllers.HandleCORS).Methods("OPTIONS")
 	router.HandleFunc("/flightplans/{planId}", controllers.HandleCORS).Methods("OPTIONS")
 	router.HandleFunc("/reports", controllers.HandleCORS).Methods("OPTIONS")
+	router.HandleFunc("/files/{fileId}/base64", controllers.HandleCORS).Methods("OPTIONS")
 	return router
 }
 
@@ -86,6 +87,11 @@ func setFileRoutes(router *mux.Router) *mux.Router {
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
 			negroni.HandlerFunc(controllers.ShowFile),
+		)).Methods("GET")
+	router.Handle("/files/{fileId}/base64",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.SendFileBase64),
 		)).Methods("GET")
 	return router
 }
