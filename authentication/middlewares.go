@@ -15,7 +15,7 @@ const UserKey key = 0
 func RequireTokenAuthentication(rw http.ResponseWriter, req *http.Request, next http.HandlerFunc){
 	authBackend := InitAuthBackend()
 	rw.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, Authorization")
-	rw.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
 	token, err := request.ParseFromRequest(req, request.AuthorizationHeaderExtractor, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
