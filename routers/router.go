@@ -10,19 +10,69 @@ import (
 
 func InitRoutes() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/", controllers.Index).Methods("GET")
+//	router.HandleFunc("/", controllers.Index).Methods("GET")
 	router.HandleFunc("/login", controllers.Login).Methods("POST")
 	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
-	router.Handle("/users",
+	router = setCORSRoutes(router)
+	router = setFlightPlanRoutes(router)
+	router = setReportRoutes(router)
+	router = setFileRoutes(router)
+	return router
+}
+
+func setCORSRoutes(router *mux.Router) *mux.Router {
+	router.HandleFunc("/files", controllers.HandleCORS).Methods("OPTIONS")
+	router.HandleFunc("/flightplans", controllers.HandleCORS).Methods("OPTIONS")
+	router.HandleFunc("/flightplans/{planId}", controllers.HandleCORS).Methods("OPTIONS")
+	router.HandleFunc("/reports", controllers.HandleCORS).Methods("OPTIONS")
+	router.HandleFunc("/files/{fileId}/base64", controllers.HandleCORS).Methods("OPTIONS")
+	return router
+}
+
+func setFlightPlanRoutes(router *mux.Router) *mux.Router {
+	router.Handle("/flightplans", 
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
-			negroni.HandlerFunc(controllers.UserIndex),
+			negroni.HandlerFunc(controllers.ListPlans),
 		)).Methods("GET")
-	router.Handle("/users/{userId}",
+	router.Handle("/flightplans/{planId}", 
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
-			negroni.HandlerFunc(controllers.ShowUser),
+			negroni.HandlerFunc(controllers.ShowPlan),
 		)).Methods("GET")
+	router.Handle("/flightplans", 
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.CreatePlan),
+		)).Methods("POST")
+	return router
+}
+
+func setReportRoutes(router *mux.Router) *mux.Router {
+	router.Handle("/reports",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.ListReports),
+		)).Methods("GET")
+	router.Handle("/reports/{reportId}",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.GetReport),
+		)).Methods("GET")
+	router.Handle("/reports",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.CreateReport),
+		)).Methods("POST")
+	router.Handle("/reports/forplan/{planId}",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.GetReportsForPlan),
+		)).Methods("GET")
+	return router
+}
+
+func setFileRoutes(router *mux.Router) *mux.Router {
 	router.Handle("/files", 
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
@@ -37,6 +87,11 @@ func InitRoutes() *mux.Router {
 		negroni.New(
 			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
 			negroni.HandlerFunc(controllers.ShowFile),
+		)).Methods("GET")
+	router.Handle("/files/{fileId}/base64",
+		negroni.New(
+			negroni.HandlerFunc(authentication.RequireTokenAuthentication),
+			negroni.HandlerFunc(controllers.SendFileBase64),
 		)).Methods("GET")
 	return router
 }

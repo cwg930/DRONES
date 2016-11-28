@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"html/template"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"os"
 	"io"
+	"io/ioutil"
 	
 	"github.com/cwg930/drones-server/models"
 	"github.com/cwg930/drones-server/services"
@@ -56,6 +58,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.Form.Get("username")
@@ -65,6 +68,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("in login handler user.Username = " + user.Username)
 	responseStatus, token := services.Login(user)
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(responseStatus)
 	log.Println("in login handler " + string(token))
 	w.Write(token)
@@ -155,7 +159,19 @@ func SubmitFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	defer f.Close()
 	io.Copy(f, file)
 	usr := context.Get(r, auth.UserKey)
-	fMeta := models.FileMeta{FileName:"./files/" + handler.Filename, OwnerID: int(usr.(float64))}
+	reportID, err := strconv.Atoi(r.FormValue("reportID"))
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	pointID, err := strconv.Atoi(r.FormValue("pointID"))
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	fMeta := models.FileMeta{FileName:"./files/" + handler.Filename, OwnerID: int(usr.(float64)), ReportID: reportID, PointID: pointID}
 	err = db.AddFile(fMeta)
 	if err != nil {
 		log.Printf("Error submitting file info to db: %v",err)
@@ -165,7 +181,8 @@ func SubmitFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 }
 
 func ListFiles(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	files, err := db.AllFiles()
+	usr := context.Get(r, auth.UserKey)
+	files, err := db.AllFiles(int(usr.(float64)))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
@@ -178,6 +195,7 @@ func ListFiles(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -190,6 +208,25 @@ func ShowFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	}
 	fMeta, err := db.GetFile(int(fileId))
 	http.ServeFile(w, r, fMeta.FileName)
+}
+
+func SendFileBase64(w http.ResponseWriter, r *http.Request, next http.HandlerFunc){
+	vars := mux.Vars(r)
+	fileId, err := strconv.ParseInt(vars["fileId"], 10,32)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	fMeta, err := db.GetFile(int(fileId))
+	file, err := ioutil.ReadFile(fMeta.FileName)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	enc := base64.NewEncoder(base64.StdEncoding, w)
+	enc.Write(file)
 }
 
 func GetToken(w http.ResponseWriter, r *http.Request){

@@ -6,10 +6,12 @@ type FileMeta struct{
 	FileName string `json:"filename"`
 	ID int `json:"id"`
 	OwnerID int `json:"owner"`
+	ReportID int `json:"report"`
+	PointID int `json:"point"`
 }
 
-func (db *DB) AllFiles() ([]*FileMeta, error) {
-	rows, err := db.Query("SELECT id, filename FROM files")
+func (db *DB) AllFiles(ownerID int) ([]*FileMeta, error) {
+	rows, err := db.Query("SELECT * FROM files WHERE owner = ?", ownerID)
 	if err != nil {
 		return nil, err
 	}
@@ -18,7 +20,7 @@ func (db *DB) AllFiles() ([]*FileMeta, error) {
 	files := make([]*FileMeta, 0)
 	for rows.Next() {
 		file := new (FileMeta)
-		err := rows.Scan(&file.ID, &file.FileName)
+		err := rows.Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)
 		if err != nil {
 			return nil, err
 		}
@@ -30,21 +32,64 @@ func (db *DB) AllFiles() ([]*FileMeta, error) {
 	return files,  nil
 }
 
-func (db *DB) GetFile(id int) (*FileMeta, error) {
-	fMeta := &FileMeta{}
-	err := db.QueryRow("SELECT id, filename FROM files WHERE id = ?", id).Scan(&fMeta.ID, &fMeta.FileName)
+func (db *DB) AllFilesForReport(reportID int64) ([]*FileMeta, error) {
+	rows, err := db.Query("SELECT * FROM files WHERE report = ?", reportID)
 	if err != nil {
 		return nil, err
 	}
-	return fMeta, nil
+	defer rows.Close()
+	files := make([]*FileMeta, 0)
+	for rows.Next() {
+		file := new (FileMeta)
+		err := rows.Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, file)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
+/*
+func (db *DB) AllFilesForPlan(planID int) ([]*FileMeta,[]*Reports, error) {
+	rows, err := db.Query("SELECT * FROM files INNER JOIN reports ON files.report=reports.id WHERE plan=?", planID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	files := make([]*FileMeta, 0)
+	for rows.Next() {
+		file := new (FileMeta)
+		err := rows.Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, file)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+*/
+func (db *DB) GetFile(id int) (*FileMeta, error) {
+	file := &FileMeta{}
+	err := db.QueryRow("SELECT * FROM files WHERE id = ?", id).Scan(&file.ID, &file.OwnerID, &file.ReportID, &file.PointID, &file.FileName)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }
 //add a reference to a file 
 func (db *DB) AddFile(file FileMeta) error {
-	stmt, err := db.Prepare("INSERT INTO files(owner,filename) VALUES(?,?)")
+	stmt, err := db.Prepare("INSERT INTO files(owner,report,point,filename) VALUES(?,?,?,?)")
 	if err != nil {
 		return err
 	}
-	res, err := stmt.Exec(file.OwnerID, file.FileName)
+	res, err := stmt.Exec(file.OwnerID, file.ReportID, file.PointID, file.FileName)
 	if err != nil {
 		return err
 	}
