@@ -159,18 +159,22 @@ func SubmitFile(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	defer f.Close()
 	io.Copy(f, file)
 	usr := context.Get(r, auth.UserKey)
+	log.Printf("\nreportID FormValue:%v",r.FormValue("reportID"))
 	reportID, err := strconv.Atoi(r.FormValue("reportID"))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	log.Printf("\nreportID intvalue: %d",reportID)
+	log.Printf("\npointID FormValue: %v", r.FormValue("pointID"))
 	pointID, err := strconv.Atoi(r.FormValue("pointID"))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+	log.Printf("\npointID intvalue: %d", pointID)
 	fMeta := models.FileMeta{FileName:"./files/" + handler.Filename, OwnerID: int(usr.(float64)), ReportID: reportID, PointID: pointID}
 	err = db.AddFile(fMeta)
 	if err != nil {
