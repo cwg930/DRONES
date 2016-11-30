@@ -87,6 +87,7 @@ func CreateReport(w http.ResponseWriter, r *http.Request, next http.HandlerFunc)
 	}
 	owner := context.Get(r, auth.UserKey)
 	report.OwnerID = int(owner.(float64))
+	log.Printf("Report received. Name: %v, Owner: %d, Plan: %d", report.Name, report.OwnerID, report.PlanID) 
 	id, err := db.AddReport(report)
 	if err != nil {
 		log.Println(err)
