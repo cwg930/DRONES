@@ -14,7 +14,7 @@ type Point struct{
 	Lat float64 `json:"lat"`
 	Lon float64 `json:"lon"`
 	Alt float64 `json:"alt"`
-	Rot float64 `json:"rot"`
+	Rot int16 `json:"rot"`
 	Pic bool `json:"pic"`
 }
 
